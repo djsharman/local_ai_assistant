@@ -26,11 +26,9 @@ def main():
     json_context = INITIAL_CONTEXT.copy()
     if context:
         try:
-            context_list = json.loads(context)  # Ensure context is properly parsed
-            json_context.extend(context_list)
+            json_context = json.loads(context)  # Ensure context is properly parsed
         except json.JSONDecodeError as e:
             print(f"Error decoding context JSON: {e}")
-            context_list = []
 
     while True:
         record_audio("input.wav")
