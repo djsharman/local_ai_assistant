@@ -1,22 +1,44 @@
 import pyaudio
 import wave
+import time
+import audioop
 
-def record_audio(output_filename, record_seconds=5, sample_rate=16000, channels=1):
+def record_audio(output_filename, silence_threshold=1000, silence_duration=3, sample_rate=16000, channels=1):
     audio = pyaudio.PyAudio()
     stream = audio.open(format=pyaudio.paInt16,
-                        channels=channels,
-                        rate=sample_rate,
-                        input=True,
-                        frames_per_buffer=1024)
+                         channels=channels,
+                         rate=sample_rate,
+                         input=True,
+                         frames_per_buffer=1024)
 
-    print("Recording...")
+    print("Recording... (start speaking)")
+
     frames = []
+    recording = False
+    silence_start_time = None
 
-    for _ in range(0, int(sample_rate / 1024 * record_seconds)):
+    while True:
         data = stream.read(1024)
-        frames.append(data)
+        rms = audioop.rms(data, 2)  # Calculate RMS to detect silence
 
-    print("Recording finished")
+        if rms > silence_threshold:
+            if not recording:
+                recording = True
+                print("Recording started...")
+            frames.append(data)
+            silence_start_time = None  # Reset silence timer
+        else:
+            if recording:
+                if silence_start_time is None:
+                    silence_start_time = time.time()
+                else:
+                    if time.time() - silence_start_time > silence_duration:
+                        print("Recording completed")
+                        break
+               
+
+        if recording:
+            frames.append(data)
 
     stream.stop_stream()
     stream.close()

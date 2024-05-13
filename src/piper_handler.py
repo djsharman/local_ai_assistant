@@ -1,8 +1,26 @@
-import subprocess
+from piper import PiperVoice
+import wave  
+from io import BytesIO
+from pygame import mixer
 
-def text_to_speech(text, output_filename):
-    command = f'echo "{text}" | ./piper --model en_US-lessac-medium.onnx --output_file {output_filename}'
-    subprocess.run(command, shell=True)
+mixer.init()
 
-def play_audio(file_path):
-    subprocess.run(["aplay", file_path])
+
+voice = PiperVoice.load('../en_US-ryan-medium.onnx', 
+	config_path='../en_US-ryan-medium.onnx.json')
+
+def text_to_speech(text):
+    wavaudio = BytesIO()
+    with wave.open(wavaudio, "wb") as wav_file:
+        voice.synthesize(text, wav_file)
+        wav_file.close()
+
+    wavaudio.seek(0)
+
+    mixer.music.load(wavaudio, "wav")
+    mixer.music.play()
+
+    # Wait until the playback has finished
+    while mixer.music.get_busy():
+        continue
+

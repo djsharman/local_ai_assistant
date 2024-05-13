@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "3.10.12"
 torch = "^2.3.0"
 transformers = "^4.40.2"
 whisper = "^1.1.10"
